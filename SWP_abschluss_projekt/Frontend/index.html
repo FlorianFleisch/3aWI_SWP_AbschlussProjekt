@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Schulverwaltung</title>
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Helvetica, Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f5f5f7;
+        color: #1d1d1f;
+      }
+      .container {
+        max-width: 800px;
+        margin: 40px auto;
+        padding: 20px;
+        background-color: #fff;
+        border-radius: 20px;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+      }
+      h1 {
+        text-align: center;
+        font-size: 2em;
+        margin-bottom: 20px;
+      }
+      form {
+        display: grid;
+        gap: 10px;
+        margin-bottom: 30px;
+      }
+      input,
+      select,
+      button {
+        padding: 10px;
+        font-size: 1em;
+        border: 1px solid #ccc;
+        border-radius: 12px;
+      }
+      button {
+        background-color: #0071e3;
+        color: white;
+        cursor: pointer;
+        border: none;
+      }
+      button:hover {
+        background-color: #005bb5;
+      }
+      .output {
+        margin-top: 30px;
+      }
+      .entry {
+        background: #f2f2f2;
+        padding: 10px;
+        border-radius: 12px;
+        margin-bottom: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Neuer Schüler</h1>
+      <form id="schuelerForm">
+        <input type="text" id="name" placeholder="Name" required />
+        <input type="number" id="alter" placeholder="Alter" required />
+        <input type="text" id="klasseId" placeholder="Klasse ID" required />
+        <button type="submit">Speichern</button>
+      </form>
+
+      <h1>Neue Klasse</h1>
+      <form id="klasseForm">
+        <input
+          type="text"
+          id="klassenname"
+          placeholder="Klassenname"
+          required
+        />
+        <input
+          type="number"
+          id="klassenvorstandId"
+          placeholder="Klassenvorstand Lehrer ID"
+          required
+        />
+        <button type="submit">Speichern</button>
+      </form>
+
+      <h1>Neues Fach</h1>
+      <form id="fachForm">
+        <input
+          type="text"
+          id="fachBezeichnung"
+          placeholder="Fachbezeichnung"
+          required
+        />
+        <input
+          type="number"
+          id="fachLehrerId"
+          placeholder="Lehrer ID"
+          required
+        />
+        <button type="submit">Speichern</button>
+      </form>
+
+      <h1>Neuer Lehrer</h1>
+      <form id="lehrerForm">
+        <input type="text" id="lehrerName" placeholder="Lehrername" required />
+        <button type="submit">Speichern</button>
+      </form>
+
+      <h1>Neuer Raum</h1>
+      <form id="raumForm">
+        <input
+          type="text"
+          id="raumBezeichnung"
+          placeholder="Raumbezeichnung"
+          required
+        />
+        <button type="submit">Speichern</button>
+      </form>
+
+      <div class="output">
+        <h2>Alle Schüler:</h2>
+        <div id="alleSchueler"></div>
+      </div>
+    </div>
+
+    <script>
+      const apiBase = "https://localhost:7258/api";
+
+      async function fetchAndDisplay() {
+        const res = await fetch(`${apiBase}/schueler`);
+        const data = await res.json();
+        const output = document.getElementById("alleSchueler");
+        output.innerHTML = data
+          .map(
+            (s) =>
+              `<div class="entry">${s.name}, Alter: ${s.alter}, Klasse: ${
+                s.klasse?.name ?? "Unbekannt"
+              }</div>`
+          )
+          .join("");
+      }
+
+      document
+        .getElementById("schuelerForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const res = await fetch(`${apiBase}/schueler`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              name: document.getElementById("name").value,
+              alter: parseInt(document.getElementById("alter").value),
+              klasseId: parseInt(document.getElementById("klasseId").value),
+            }),
+          });
+          if (res.ok) fetchAndDisplay();
+        });
+
+      document
+        .getElementById("klasseForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+          await fetch(`${apiBase}/klasse`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              name: document.getElementById("klassenname").value,
+              klassenvorstandId: parseInt(
+                document.getElementById("klassenvorstandId").value
+              ),
+            }),
+          });
+        });
+
+      document
+        .getElementById("fachForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+          await fetch(`${apiBase}/fach`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              bezeichnung: document.getElementById("fachBezeichnung").value,
+              lehrerId: parseInt(document.getElementById("fachLehrerId").value),
+            }),
+          });
+        });
+
+      document
+        .getElementById("lehrerForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+          await fetch(`${apiBase}/lehrer`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              name: document.getElementById("lehrerName").value,
+            }),
+          });
+        });
+
+      document
+        .getElementById("raumForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+          await fetch(`${apiBase}/raum`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              bezeichnung: document.getElementById("raumBezeichnung").value,
+            }),
+          });
+        });
+
+      fetchAndDisplay();
+    </script>
+  </body>
+</html>
