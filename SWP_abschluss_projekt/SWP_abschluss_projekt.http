@@ -1,0 +1,6 @@
+@SWP_abschluss_projekt_HostAddress = http://localhost:5225
+
+GET {{SWP_abschluss_projekt_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
